@@ -6,13 +6,12 @@
 
 
 use std::fs::*;
-use std::io::prelude::*;
 use std::io::{self, BufRead};
 use std::path::Path;
 
 
 
-
+// function to convert a csv file to a vector of a vector of strings
 pub fn csv_get_str_vec(file: &str, num_fields: usize, skip: i32, delimiter: &str) -> Result<Vec<Vec<String>>, String> {
     let mut ret: Vec<Vec<String>> = Vec::new();
     let mut line_counter = 0;
@@ -58,6 +57,11 @@ pub fn csv_get_str_vec(file: &str, num_fields: usize, skip: i32, delimiter: &str
         return Err(message);
     }
 
+    if ret.len() == 0 {
+        let message = format!("The output vector has no no data!");
+        return Err(message); 
+    }
+
     Ok(ret)
 }
 
@@ -92,8 +96,6 @@ mod tests {
     // #[ignore]
     #[test]
     fn t001_first() {
-        // let mut veccy: Vec<Vec<String>> = Vec::new();
-
         let source = "./test/some-documents/small.csv";
         let destination = "./test/work.csv";
         copy(source,destination).expect("Failed to copy");
@@ -106,6 +108,37 @@ mod tests {
     // #[ignore]
     #[test]
     fn t002_failures() {
+        // no lines
+        let source = "./test/some-documents/no-rows.csv";
+        let destination = "./test/work.csv";
+        copy(source,destination).expect("Failed to copy");
+        let res_veccy = csv_get_str_vec(destination,6, 2,";");
+        remove_file(destination).expect("Cleanup test failed");
+        assert!(res_veccy.is_err());
+
+        // one line too little fields
+        let source = "./test/some-documents/too-little.csv";
+        let destination = "./test/work.csv";
+        copy(source,destination).expect("Failed to copy");
+        let res_veccy = csv_get_str_vec(destination,6, 2,";");
+        remove_file(destination).expect("Cleanup test failed");
+        assert!(res_veccy.is_err());
+
+        // one line too many fields
+        let source = "./test/some-documents/too-many.csv";
+        let destination = "./test/work.csv";
+        copy(source,destination).expect("Failed to copy");
+        let res_veccy = csv_get_str_vec(destination,6, 2,";");
+        remove_file(destination).expect("Cleanup test failed");
+        assert!(res_veccy.is_err());
+
+        // one line blank
+        let source = "./test/some-documents/blank.csv";
+        let destination = "./test/work.csv";
+        copy(source,destination).expect("Failed to copy");
+        let res_veccy = csv_get_str_vec(destination,6, 2,";");
+        remove_file(destination).expect("Cleanup test failed");
+        assert!(res_veccy.is_err());
 
     }
 
